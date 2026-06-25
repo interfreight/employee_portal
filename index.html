@@ -414,7 +414,105 @@ src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
 </div>
 
 </div>
+<div class="card">
 
+<h3>📝 File Leave Request</h3>
+
+<div class="detail">
+<label>Leave Type</label>
+
+<select id="leaveType">
+
+<option value="Vacation Leave">
+Vacation Leave
+</option>
+
+<option value="Sick Leave">
+Sick Leave
+</option>
+
+<option value="Emergency Leave">
+Emergency Leave
+</option>
+
+<option value="Birthday Leave">
+Birthday Leave
+</option>
+
+<option value="Maternity Leave">
+Maternity Leave
+</option>
+
+<option value="Paternity Leave">
+Paternity Leave
+</option>
+
+<option value="Study Leave">
+Study Leave
+</option>
+
+</select>
+
+</div>
+
+<br>
+
+<div class="detail">
+<label>Date From</label>
+<input type="date" id="dateFrom">
+</div>
+
+<br>
+
+<div class="detail">
+<label>Date To</label>
+<input type="date" id="dateTo">
+</div>
+
+<br>
+
+<div class="detail">
+<label>Reason</label>
+
+<textarea
+id="leaveReason"
+rows="4"
+style="
+width:100%;
+padding:10px;
+border:1px solid #ddd;
+border-radius:10px;">
+</textarea>
+
+</div>
+
+<br>
+
+<button
+onclick="submitLeave()"
+style="
+background:#003366;
+color:white;
+border:none;
+padding:12px 20px;
+border-radius:10px;
+cursor:pointer;">
+Submit Leave Request
+</button>
+
+</div>
+
+  <div class="card">
+
+<h3>📋 My Leave Requests</h3>
+
+<div id="leaveHistory">
+
+Loading...
+
+</div>
+
+</div>
 <script>
 
 const db = window.supabase.createClient(
@@ -429,7 +527,93 @@ if(!currentUser){
 window.location.href =
 "https://interfreight.github.io/login/";
 }
+async function loadLeaveHistory(){
 
+const container =
+document.getElementById("leaveHistory");
+
+const { data, error } =
+await db
+.from("employee_leaves")
+.select("*")
+.eq("user_id", currentUser.id)
+.order("created_at",{ascending:false});
+
+if(error){
+
+container.innerHTML =
+error.message;
+
+return;
+
+}
+
+if(!data || data.length === 0){
+
+container.innerHTML =
+"No leave requests found.";
+
+return;
+
+}
+
+container.innerHTML = "";
+
+data.forEach(leave=>{
+
+let color = "#ffc107";
+
+if(leave.status==="Approved")
+color="#28a745";
+
+if(leave.status==="Rejected")
+color="#dc3545";
+
+container.innerHTML += `
+
+<div style="
+border:1px solid #eee;
+padding:15px;
+margin-bottom:10px;
+border-radius:12px;">
+
+<b>${leave.leave_type}</b>
+
+<br>
+
+${leave.date_from}
+to
+${leave.date_to}
+
+<br>
+
+${leave.total_days} day(s)
+
+<br>
+
+Reason:
+${leave.reason}
+
+<br>
+
+Status:
+
+<span style="
+font-weight:bold;
+color:${color};">
+
+${leave.status}
+
+</span>
+
+</div>
+
+`;
+
+});
+
+}
+  
 async function loadProfile(){
 
 document.getElementById("fullName").textContent =
@@ -466,7 +650,7 @@ profile.profile_photo ||
 "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
 document.getElementById("employeeNumber").textContent =
-profile.employee_number || "-";
+currentUser.id || "-";
 
 document.getElementById("position").textContent =
 profile.position || "-";
@@ -542,8 +726,153 @@ localStorage.removeItem("currentUser");
 window.location.href =
 "https://interfreight.github.io/login/";
 }
+async function submitLeave(){
 
+const leaveType =
+document.getElementById("leaveType").value;
+
+const dateFrom =
+document.getElementById("dateFrom").value;
+
+const dateTo =
+document.getElementById("dateTo").value;
+
+const reason =
+document.getElementById("leaveReason").value;
+
+if(!dateFrom || !dateTo){
+
+alert("Please select dates");
+return;
+
+}
+if(new Date(dateTo) < new Date(dateFrom)){
+
+alert("Date To cannot be earlier than Date From");
+
+return;
+
+}
+  if(reason.trim() === ""){
+    alert("Please enter reason");
+    return;
+}
+const { data: profile, error: profileError } =
+await db
+.from("employee_profiles")
+.select("*")
+.eq("user_id", currentUser.id)
+.single();
+
+if(profileError){
+
+alert(profileError.message);
+
+return;
+
+}
+
+if(!profile){
+
+alert("Employee profile not found.");
+
+return;
+
+}
+
+let available = 0;
+switch(leaveType){
+
+case "Vacation Leave":
+available = profile.vacation_leave || 0;
+break;
+
+case "Sick Leave":
+available = profile.sick_leave || 0;
+break;
+
+case "Emergency Leave":
+available = profile.emergency_leave || 0;
+break;
+
+case "Birthday Leave":
+available = profile.birthday_leave || 0;
+break;
+
+case "Maternity Leave":
+available = profile.maternity_leave || 0;
+break;
+
+case "Paternity Leave":
+available = profile.paternity_leave || 0;
+break;
+
+case "Study Leave":
+available = profile.study_leave || 0;
+break;
+
+}
+const days =
+Math.ceil(
+(new Date(dateTo) - new Date(dateFrom))
+/
+(1000*60*60*24)
+) + 1;
+if(days > available){
+
+alert(
+"Insufficient leave balance. Available: "
++ available
+);
+
+return;
+
+}
+  
+const { error } =
+await db
+.from("employee_leaves")
+.insert({
+
+user_id: currentUser.id,
+
+employee_name:
+currentUser.full_name,
+
+department:
+currentUser.department,
+
+leave_type: leaveType,
+
+date_from: dateFrom,
+
+date_to: dateTo,
+
+total_days: days,
+
+reason: reason,
+
+status: "Pending"
+
+});
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+alert("Leave request submitted.");
+document.getElementById("dateFrom").value = "";
+document.getElementById("dateTo").value = "";
+document.getElementById("leaveReason").value = "";
+  
+loadLeaveHistory();
+
+}
 loadProfile();
+loadLeaveHistory();
 
 </script>
 
