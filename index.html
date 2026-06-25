@@ -1,6 +1,7 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
@@ -32,8 +33,6 @@ width:260px;
 background:#003366;
 color:white;
 padding:25px;
-display:flex;
-flex-direction:column;
 }
 
 .logo{
@@ -46,12 +45,8 @@ width:120px;
 }
 
 .logo h2{
-margin-top:15px;
-font-size:20px;
-}
-
-.menu{
-margin-top:20px;
+margin-top:10px;
+font-size:22px;
 }
 
 .menu a{
@@ -64,11 +59,7 @@ color:white;
 font-weight:500;
 }
 
-.menu a:hover{
-background:#1E5AA8;
-}
-
-.menu .active{
+.menu a.active{
 background:#F4C542;
 color:#003366;
 font-weight:bold;
@@ -90,50 +81,57 @@ margin-bottom:25px;
 
 .header h1{
 color:#003366;
+font-size:42px;
 }
 
 .logout-btn{
 background:#dc3545;
 color:white;
 border:none;
-padding:10px 18px;
+padding:12px 18px;
 border-radius:8px;
 cursor:pointer;
 }
 
-/* PROFILE */
+/* HERO CARD */
 
-.profile-card{
+.hero{
 background:white;
-padding:30px;
 border-radius:20px;
-box-shadow:0 5px 20px rgba(0,0,0,.08);
+padding:30px;
 display:flex;
 align-items:center;
 gap:30px;
+box-shadow:0 5px 20px rgba(0,0,0,.08);
 margin-bottom:25px;
 }
 
-.profile-photo{
-width:160px;
-height:160px;
+.hero img{
+width:170px;
+height:170px;
 border-radius:50%;
 object-fit:cover;
 border:6px solid #003366;
 }
 
-.profile-info h2{
+.hero-info h2{
+font-size:36px;
 color:#003366;
 margin-bottom:10px;
+}
+
+.hero-info p{
+margin-bottom:6px;
+font-size:16px;
 }
 
 .badge{
 display:inline-block;
 padding:8px 14px;
-border-radius:30px;
+border-radius:20px;
 font-size:13px;
 font-weight:bold;
-margin-right:10px;
+margin-right:8px;
 margin-top:10px;
 }
 
@@ -151,14 +149,15 @@ color:white;
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+grid-template-columns:1fr 1fr;
 gap:20px;
+margin-bottom:20px;
 }
 
 .card{
 background:white;
+border-radius:20px;
 padding:25px;
-border-radius:18px;
 box-shadow:0 5px 20px rgba(0,0,0,.08);
 }
 
@@ -175,9 +174,15 @@ margin-bottom:12px;
 
 .detail strong{
 display:block;
-color:#555;
-margin-bottom:3px;
+color:#666;
+font-size:14px;
 }
+
+.detail span{
+font-size:15px;
+}
+
+/* LEAVE */
 
 .leave-grid{
 display:grid;
@@ -187,34 +192,30 @@ gap:15px;
 
 .leave-box{
 background:#f7f9fc;
-padding:15px;
-border-radius:12px;
+border-radius:15px;
+padding:18px;
 text-align:center;
 }
 
 .leave-box h4{
 color:#003366;
-margin-bottom:8px;
+margin-bottom:10px;
 }
 
 .leave-box span{
-font-size:24px;
+font-size:30px;
 font-weight:bold;
 }
 
 /* RESPONSIVE */
 
-@media(max-width:768px){
+@media(max-width:1000px){
 
-body{
-flex-direction:column;
+.grid{
+grid-template-columns:1fr;
 }
 
-.sidebar{
-width:100%;
-}
-
-.profile-card{
+.hero{
 flex-direction:column;
 text-align:center;
 }
@@ -236,9 +237,6 @@ text-align:center;
 
 <div class="menu">
 <a href="#" class="active">Dashboard</a>
-<a href="#">My Profile</a>
-<a href="#">Leave Credits</a>
-<a href="#">Notifications</a>
 </div>
 
 </div>
@@ -255,26 +253,24 @@ Logout
 
 </div>
 
-<!-- PROFILE -->
+<!-- HERO -->
 
-<div class="profile-card">
+<div class="hero">
 
 <img id="profilePhoto"
-class="profile-photo"
-src="">
+src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
 
-<div class="profile-info">
+<div class="hero-info">
 
 <h2 id="fullName">Loading...</h2>
 
-<p id="email">Loading...</p>
+<p id="email"></p>
+<p id="employeeNumber"></p>
+<p id="department"></p>
+<p id="position"></p>
 
-<p id="department">Loading...</p>
-
-<div>
-<span class="badge role" id="role">Role</span>
-<span class="badge status" id="status">Status</span>
-</div>
+<span class="badge role" id="role"></span>
+<span class="badge status" id="status"></span>
 
 </div>
 
@@ -282,15 +278,68 @@ src="">
 
 <div class="grid">
 
-<!-- EMPLOYEE DETAILS -->
+<!-- PERSONAL -->
 
 <div class="card">
 
-<h3>Employee Details</h3>
+<h3>Personal Information</h3>
+
+<div class="detail">
+<strong>Date of Birth</strong>
+<span id="dateOfBirth"></span>
+</div>
+
+<div class="detail">
+<strong>Gender</strong>
+<span id="gender"></span>
+</div>
+
+<div class="detail">
+<strong>Civil Status</strong>
+<span id="civilStatus"></span>
+</div>
+
+<div class="detail">
+<strong>Nationality</strong>
+<span id="nationality"></span>
+</div>
+
+<div class="detail">
+<strong>Citizenship</strong>
+<span id="citizenship"></span>
+</div>
+
+<div class="detail">
+<strong>Religion</strong>
+<span id="religion"></span>
+</div>
+
+<div class="detail">
+<strong>Father Name</strong>
+<span id="fatherName"></span>
+</div>
+
+<div class="detail">
+<strong>Mother Name</strong>
+<span id="motherName"></span>
+</div>
+
+<div class="detail">
+<strong>Spouse Name</strong>
+<span id="spouseName"></span>
+</div>
+
+</div>
+
+<!-- EMPLOYMENT -->
+
+<div class="card">
+
+<h3>Employment Information</h3>
 
 <div class="detail">
 <strong>Position</strong>
-<span id="position"></span>
+<span id="position2"></span>
 </div>
 
 <div class="detail">
@@ -315,7 +364,9 @@ src="">
 
 </div>
 
-<!-- LEAVE CREDITS -->
+</div>
+
+<!-- LEAVE -->
 
 <div class="card">
 
@@ -364,71 +415,103 @@ src="">
 
 </div>
 
-</div>
-
 <script>
 
 const db = window.supabase.createClient(
-"https://tuihpvykuqbqnfyfepql.supabase.co",
-"YOUR_ANON_KEY"
+"https://tuihpvykuqbqnfyfepql.supabase.co/rest/v1/",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1aWhwdnlrdXFicW5meWZlcHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3Mjg4OTcsImV4cCI6MjA5NzMwNDg5N30.HZKS8CgFLjkZ-Bx2AIjFjurH3IsKjvf37Ft852CzJsQ"
 );
 
 const currentUser =
 JSON.parse(localStorage.getItem("currentUser"));
 
 if(!currentUser){
-
 window.location.href =
 "https://interfreight.github.io/login/";
-
 }
 
 async function loadProfile(){
 
 document.getElementById("fullName").textContent =
-currentUser.full_name;
+currentUser.full_name || "-";
 
 document.getElementById("email").textContent =
-currentUser.email;
+currentUser.email || "-";
 
 document.getElementById("department").textContent =
-currentUser.department;
+currentUser.department || "-";
 
 document.getElementById("role").textContent =
-currentUser.role;
+currentUser.role || "-";
 
 document.getElementById("status").textContent =
-currentUser.status;
+currentUser.status || "-";
 
 const { data: profile, error } =
 await db
 .from("employee_profiles")
 .select("*")
 .eq("user_id", currentUser.id)
-.single();
+.maybeSingle();
 
 if(error){
 console.log(error);
 return;
 }
 
+if(!profile) return;
+
 document.getElementById("profilePhoto").src =
-profile.profile_photo || "";
+profile.profile_photo ||
+"https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+document.getElementById("employeeNumber").textContent =
+profile.employee_number || "-";
 
 document.getElementById("position").textContent =
-profile.position || "";
+profile.position || "-";
+
+document.getElementById("position2").textContent =
+profile.position || "-";
 
 document.getElementById("employmentStatus").textContent =
-profile.employment_status || "";
+profile.employment_status || "-";
 
 document.getElementById("dateHired").textContent =
-profile.date_hired || "";
+profile.date_hired || "-";
 
 document.getElementById("mobileNumber").textContent =
-profile.mobile_number || "";
+profile.mobile_number || "-";
 
 document.getElementById("address").textContent =
-profile.address || "";
+profile.address || "-";
+
+document.getElementById("dateOfBirth").textContent =
+profile.date_of_birth || "-";
+
+document.getElementById("gender").textContent =
+profile.gender || "-";
+
+document.getElementById("civilStatus").textContent =
+profile.marital_status || "-";
+
+document.getElementById("nationality").textContent =
+profile.nationality || "-";
+
+document.getElementById("citizenship").textContent =
+profile.citizenship || "-";
+
+document.getElementById("religion").textContent =
+profile.religion || "-";
+
+document.getElementById("fatherName").textContent =
+profile.father_name || "-";
+
+document.getElementById("motherName").textContent =
+profile.mother_name || "-";
+
+document.getElementById("spouseName").textContent =
+profile.spouse_name || "-";
 
 document.getElementById("vacationLeave").textContent =
 profile.vacation_leave || 0;
@@ -450,7 +533,6 @@ profile.paternity_leave || 0;
 
 document.getElementById("studyLeave").textContent =
 profile.study_leave || 0;
-
 }
 
 function logout(){
@@ -459,7 +541,6 @@ localStorage.removeItem("currentUser");
 
 window.location.href =
 "https://interfreight.github.io/login/";
-
 }
 
 loadProfile();
@@ -468,3 +549,4 @@ loadProfile();
 
 </body>
 </html>
+```
