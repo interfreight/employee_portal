@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>INTERFREIGHT Employee Portal</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:260px;
+background:#003366;
+color:white;
+padding:25px;
+display:flex;
+flex-direction:column;
+}
+
+.logo{
+text-align:center;
+margin-bottom:30px;
+}
+
+.logo img{
+width:120px;
+}
+
+.logo h2{
+margin-top:15px;
+font-size:20px;
+}
+
+.menu{
+margin-top:20px;
+}
+
+.menu a{
+display:block;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+text-decoration:none;
+color:white;
+font-weight:500;
+}
+
+.menu a:hover{
+background:#1E5AA8;
+}
+
+.menu .active{
+background:#F4C542;
+color:#003366;
+font-weight:bold;
+}
+
+/* MAIN */
+
+.main{
+flex:1;
+padding:30px;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:25px;
+}
+
+.header h1{
+color:#003366;
+}
+
+.logout-btn{
+background:#dc3545;
+color:white;
+border:none;
+padding:10px 18px;
+border-radius:8px;
+cursor:pointer;
+}
+
+/* PROFILE */
+
+.profile-card{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+display:flex;
+align-items:center;
+gap:30px;
+margin-bottom:25px;
+}
+
+.profile-photo{
+width:160px;
+height:160px;
+border-radius:50%;
+object-fit:cover;
+border:6px solid #003366;
+}
+
+.profile-info h2{
+color:#003366;
+margin-bottom:10px;
+}
+
+.badge{
+display:inline-block;
+padding:8px 14px;
+border-radius:30px;
+font-size:13px;
+font-weight:bold;
+margin-right:10px;
+margin-top:10px;
+}
+
+.role{
+background:#003366;
+color:white;
+}
+
+.status{
+background:#28a745;
+color:white;
+}
+
+/* GRID */
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+.card h3{
+color:#003366;
+margin-bottom:20px;
+border-left:5px solid #F4C542;
+padding-left:10px;
+}
+
+.detail{
+margin-bottom:12px;
+}
+
+.detail strong{
+display:block;
+color:#555;
+margin-bottom:3px;
+}
+
+.leave-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+}
+
+.leave-box{
+background:#f7f9fc;
+padding:15px;
+border-radius:12px;
+text-align:center;
+}
+
+.leave-box h4{
+color:#003366;
+margin-bottom:8px;
+}
+
+.leave-box span{
+font-size:24px;
+font-weight:bold;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+body{
+flex-direction:column;
+}
+
+.sidebar{
+width:100%;
+}
+
+.profile-card{
+flex-direction:column;
+text-align:center;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<div class="logo">
+<img src="3. INTERFREIGHT COMPANY LOGO.png">
+<h2>INTERFREIGHT</h2>
+</div>
+
+<div class="menu">
+<a href="#" class="active">Dashboard</a>
+<a href="#">My Profile</a>
+<a href="#">Leave Credits</a>
+<a href="#">Notifications</a>
+</div>
+
+</div>
+
+<div class="main">
+
+<div class="header">
+
+<h1>Employee Portal</h1>
+
+<button class="logout-btn" onclick="logout()">
+Logout
+</button>
+
+</div>
+
+<!-- PROFILE -->
+
+<div class="profile-card">
+
+<img id="profilePhoto"
+class="profile-photo"
+src="">
+
+<div class="profile-info">
+
+<h2 id="fullName">Loading...</h2>
+
+<p id="email">Loading...</p>
+
+<p id="department">Loading...</p>
+
+<div>
+<span class="badge role" id="role">Role</span>
+<span class="badge status" id="status">Status</span>
+</div>
+
+</div>
+
+</div>
+
+<div class="grid">
+
+<!-- EMPLOYEE DETAILS -->
+
+<div class="card">
+
+<h3>Employee Details</h3>
+
+<div class="detail">
+<strong>Position</strong>
+<span id="position"></span>
+</div>
+
+<div class="detail">
+<strong>Employment Status</strong>
+<span id="employmentStatus"></span>
+</div>
+
+<div class="detail">
+<strong>Date Hired</strong>
+<span id="dateHired"></span>
+</div>
+
+<div class="detail">
+<strong>Mobile Number</strong>
+<span id="mobileNumber"></span>
+</div>
+
+<div class="detail">
+<strong>Address</strong>
+<span id="address"></span>
+</div>
+
+</div>
+
+<!-- LEAVE CREDITS -->
+
+<div class="card">
+
+<h3>Leave Credits</h3>
+
+<div class="leave-grid">
+
+<div class="leave-box">
+<h4>Vacation</h4>
+<span id="vacationLeave">0</span>
+</div>
+
+<div class="leave-box">
+<h4>Sick</h4>
+<span id="sickLeave">0</span>
+</div>
+
+<div class="leave-box">
+<h4>Emergency</h4>
+<span id="emergencyLeave">0</span>
+</div>
+
+<div class="leave-box">
+<h4>Birthday</h4>
+<span id="birthdayLeave">0</span>
+</div>
+
+<div class="leave-box">
+<h4>Maternity</h4>
+<span id="maternityLeave">0</span>
+</div>
+
+<div class="leave-box">
+<h4>Paternity</h4>
+<span id="paternityLeave">0</span>
+</div>
+
+<div class="leave-box">
+<h4>Study</h4>
+<span id="studyLeave">0</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const db = window.supabase.createClient(
+"https://tuihpvykuqbqnfyfepql.supabase.co",
+"YOUR_ANON_KEY"
+);
+
+const currentUser =
+JSON.parse(localStorage.getItem("currentUser"));
+
+if(!currentUser){
+
+window.location.href =
+"https://interfreight.github.io/login/";
+
+}
+
+async function loadProfile(){
+
+document.getElementById("fullName").textContent =
+currentUser.full_name;
+
+document.getElementById("email").textContent =
+currentUser.email;
+
+document.getElementById("department").textContent =
+currentUser.department;
+
+document.getElementById("role").textContent =
+currentUser.role;
+
+document.getElementById("status").textContent =
+currentUser.status;
+
+const { data: profile, error } =
+await db
+.from("employee_profiles")
+.select("*")
+.eq("user_id", currentUser.id)
+.single();
+
+if(error){
+console.log(error);
+return;
+}
+
+document.getElementById("profilePhoto").src =
+profile.profile_photo || "";
+
+document.getElementById("position").textContent =
+profile.position || "";
+
+document.getElementById("employmentStatus").textContent =
+profile.employment_status || "";
+
+document.getElementById("dateHired").textContent =
+profile.date_hired || "";
+
+document.getElementById("mobileNumber").textContent =
+profile.mobile_number || "";
+
+document.getElementById("address").textContent =
+profile.address || "";
+
+document.getElementById("vacationLeave").textContent =
+profile.vacation_leave || 0;
+
+document.getElementById("sickLeave").textContent =
+profile.sick_leave || 0;
+
+document.getElementById("emergencyLeave").textContent =
+profile.emergency_leave || 0;
+
+document.getElementById("birthdayLeave").textContent =
+profile.birthday_leave || 0;
+
+document.getElementById("maternityLeave").textContent =
+profile.maternity_leave || 0;
+
+document.getElementById("paternityLeave").textContent =
+profile.paternity_leave || 0;
+
+document.getElementById("studyLeave").textContent =
+profile.study_leave || 0;
+
+}
+
+function logout(){
+
+localStorage.removeItem("currentUser");
+
+window.location.href =
+"https://interfreight.github.io/login/";
+
+}
+
+loadProfile();
+
+</script>
+
+</body>
+</html>
