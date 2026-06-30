@@ -829,11 +829,13 @@ return;
 
 }
   let approverRole = "";
-
+console.log(currentUser);
+console.log("Department =", currentUser.department);
+console.log("Role =", currentUser.role);
 if(currentUser.role.toUpperCase() === "USER"){
 
     switch(currentUser.department.toUpperCase()){
-
+       
         case "ACCOUNTING":
             approverRole = "ACCOUNTING MANAGER";
             break;
