@@ -236,11 +236,8 @@ text-align:center;
 </div>
 
 <div class="menu">
-<a href="#" class="active">Dashboard</a>
-</div>
-
-  <div class="menu">
-<a href="https://interfreight.github.io/employee_My_leave_history/" class="active">Leave History</a>
+    <a href="https://interfreight.github.io/employee_portal/" class="menu-link active ">Dashboard</a>
+    <a href="https://interfreight.github.io/employee_My_leave_history/" class="menu-link ">Leave History</a>
 </div>
   
 </div>
@@ -932,7 +929,21 @@ loadProfile();
 loadLeaveHistory();
 
 </script>
+<script>
+const menuLinks = document.querySelectorAll(".menu-link");
 
+menuLinks.forEach(link => {
+    link.addEventListener("click", function(){
+
+        menuLinks.forEach(item=>{
+            item.classList.remove("active");
+        });
+
+        this.classList.add("active");
+
+    });
+});
+</script>
 </body>
 </html>
 ```
