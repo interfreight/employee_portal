@@ -828,7 +828,44 @@ alert(
 return;
 
 }
-  
+  let approverRole = "";
+
+if(currentUser.role.toUpperCase() === "USER"){
+
+    switch(currentUser.department.toUpperCase()){
+
+        case "ACCOUNTING":
+            approverRole = "ACCOUNTING MANAGER";
+            break;
+
+        case "OPERATIONS":
+            approverRole = "OPERATIONS MANAGER";
+            break;
+
+        case "SALES":
+            approverRole = "SALES MANAGER";
+            break;
+
+        case "TRANSPORT":
+            approverRole = "TRANSPORT MANAGER";
+            break;
+
+        case "FORWARDING":
+            approverRole = "FORWARDING MANAGER";
+            break;
+
+        case "HR":
+            approverRole = "HR";
+            break;
+    }
+
+}else{
+
+    approverRole = "PRESIDENT";
+
+}
+
+console.log("Approver =", approverRole);
 const { error } =
 await db
 .from("employee_leaves")
@@ -842,17 +879,31 @@ currentUser.full_name,
 department:
 currentUser.department,
 
-leave_type: leaveType,
+approver_role:
+approverRole,
 
-date_from: dateFrom,
+leave_type:
+leaveType,
 
-date_to: dateTo,
+date_from:
+dateFrom,
 
-total_days: days,
+date_to:
+dateTo,
 
-reason: reason,
+total_days:
+days,
 
-status: "Pending"
+reason:
+reason,
+
+status:"Pending",
+
+approved_by:null,
+
+approved_date:null,
+
+deducted:false
 
 });
 
