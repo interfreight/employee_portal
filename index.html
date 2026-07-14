@@ -513,19 +513,34 @@ Loading...
 </div>
 <script>
 
-const db = window.supabase.createClient("https://tuihpvykuqbqnfyfepql.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1aWhwdnlrdXFicW5meWZlcHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3Mjg4OTcsImV4cCI6MjA5NzMwNDg5N30.HZKS8CgFLjkZ-Bx2AIjFjurH3IsKjvf37Ft852CzJsQ");
+const db = window.supabase.createClient(
+"https://tuihpvykuqbqnfyfepql.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1aWhwdnlrdXFicW5meWZlcHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3Mjg4OTcsImV4cCI6MjA5NzMwNDg5N30.HZKS8CgFLjkZ-Bx2AIjFjurH3IsKjvf37Ft852CzJsQ"
+);
 
-const currentUser =JSON.parse(localStorage.getItem("currentUser"));
+const currentUser =
+JSON.parse(localStorage.getItem("currentUser"));
 
-if(!currentUser){window.location.href ="https://interfreight.github.io/login/";}async function loadLeaveHistory(){
+if(!currentUser){
+window.location.href =
+"https://interfreight.github.io/login/";
+}
+async function loadLeaveHistory(){
 
-const container =document.getElementById("leaveHistory");
+const container =
+document.getElementById("leaveHistory");
 
-const { data, error } =await db.from("employee_leaves").select("*").eq("user_id", currentUser.id).order("created_at",{ascending});
+const { data, error } =
+await db
+.from("employee_leaves")
+.select("*")
+.eq("user_id", currentUser.id)
+.order("created_at",{ascending:false});
 
 if(error){
 
-container.innerHTML =error.message;
+container.innerHTML =
+error.message;
 
 return;
 
@@ -533,7 +548,8 @@ return;
 
 if(!data || data.length === 0){
 
-container.innerHTML ="No leave requests found.";
+container.innerHTML =
+"No leave requests found.";
 
 return;
 
@@ -545,9 +561,11 @@ data.forEach(leave=>{
 
 let color = "#ffc107";
 
-if(leave.status==="Approved")color="#28a745";
+if(leave.status==="Approved")
+color="#28a745";
 
-if(leave.status==="Rejected")color="#dc3545";
+if(leave.status==="Rejected")
+color="#dc3545";
 
 container.innerHTML += `
 
@@ -561,7 +579,9 @@ border-radius:12px;">
 
 <br>
 
-${leave.date_from}to${leave.date_to}
+${leave.date_from}
+to
+${leave.date_to}
 
 <br>
 
@@ -569,7 +589,8 @@ ${leave.total_days} day(s)
 
 <br>
 
-Reason:${leave.reason}
+Reason:
+${leave.reason}
 
 <br>
 
@@ -590,98 +611,156 @@ ${leave.status}
 });
 
 }
-
+  
 async function loadProfile(){
 
-document.getElementById("fullName").textContent =currentUser.full_name || "-";
+document.getElementById("fullName").textContent =
+currentUser.full_name || "-";
 
-document.getElementById("email").textContent =currentUser.email || "-";
+document.getElementById("email").textContent =
+currentUser.email || "-";
 
-document.getElementById("department").textContent =currentUser.department || "-";
+document.getElementById("department").textContent =
+currentUser.department || "-";
 
-document.getElementById("role").textContent =currentUser.role || "-";
+document.getElementById("role").textContent =
+currentUser.role || "-";
 
-document.getElementById("status").textContent =currentUser.status || "-";
+document.getElementById("status").textContent =
+currentUser.status || "-";
 
-const { data: profile, error } =await db.from("employee_profiles").select("*").eq("user_id", currentUser.id).maybeSingle();
+const { data: profile, error } =
+await db
+.from("employee_profiles")
+.select("*")
+.eq("user_id", currentUser.id)
+.maybeSingle();
 
-if(error){console.log(error);return;}
+if(error){
+console.log(error);
+return;
+}
 
 if(!profile) return;
 
-document.getElementById("profilePhoto").src =profile.profile_photo ||"https://cdn-icons-png.flaticon.com/512/149/149071.png";
+document.getElementById("profilePhoto").src =
+profile.profile_photo ||
+"https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-document.getElementById("employeeNumber").textContent =currentUser.id || "-";
+document.getElementById("employeeNumber").textContent =
+currentUser.id || "-";
 
-document.getElementById("position").textContent =profile.position || "-";
+document.getElementById("position").textContent =
+profile.position || "-";
 
-document.getElementById("position2").textContent =profile.position || "-";
+document.getElementById("position2").textContent =
+profile.position || "-";
 
-document.getElementById("employmentStatus").textContent =profile.employment_status || "-";
+document.getElementById("employmentStatus").textContent =
+profile.employment_status || "-";
 
-document.getElementById("dateHired").textContent =profile.date_hired || "-";
+document.getElementById("dateHired").textContent =
+profile.date_hired || "-";
 
-document.getElementById("mobileNumber").textContent =profile.mobile_number || "-";
+document.getElementById("mobileNumber").textContent =
+profile.mobile_number || "-";
 
-document.getElementById("address").textContent =profile.address || "-";
+document.getElementById("address").textContent =
+profile.address || "-";
 
-document.getElementById("dateOfBirth").textContent =profile.date_of_birth || "-";
+document.getElementById("dateOfBirth").textContent =
+profile.date_of_birth || "-";
 
-document.getElementById("gender").textContent =profile.gender || "-";
+document.getElementById("gender").textContent =
+profile.gender || "-";
 
-document.getElementById("civilStatus").textContent =profile.marital_status || "-";
+document.getElementById("civilStatus").textContent =
+profile.marital_status || "-";
 
-document.getElementById("nationality").textContent =profile.nationality || "-";
+document.getElementById("nationality").textContent =
+profile.nationality || "-";
 
-document.getElementById("citizenship").textContent =profile.citizenship || "-";
+document.getElementById("citizenship").textContent =
+profile.citizenship || "-";
 
-document.getElementById("religion").textContent =profile.religion || "-";
+document.getElementById("religion").textContent =
+profile.religion || "-";
 
-document.getElementById("fatherName").textContent =profile.father_name || "-";
+document.getElementById("fatherName").textContent =
+profile.father_name || "-";
 
-document.getElementById("motherName").textContent =profile.mother_name || "-";
+document.getElementById("motherName").textContent =
+profile.mother_name || "-";
 
-document.getElementById("spouseName").textContent =profile.spouse_name || "-";
+document.getElementById("spouseName").textContent =
+profile.spouse_name || "-";
 
-document.getElementById("vacationLeave").textContent =profile.vacation_leave || 0;
+document.getElementById("vacationLeave").textContent =
+profile.vacation_leave || 0;
 
-document.getElementById("sickLeave").textContent =profile.sick_leave || 0;
+document.getElementById("sickLeave").textContent =
+profile.sick_leave || 0;
 
-document.getElementById("emergencyLeave").textContent =profile.emergency_leave || 0;
+document.getElementById("emergencyLeave").textContent =
+profile.emergency_leave || 0;
 
-document.getElementById("birthdayLeave").textContent =profile.birthday_leave || 0;
+document.getElementById("birthdayLeave").textContent =
+profile.birthday_leave || 0;
 
-document.getElementById("maternityLeave").textContent =profile.maternity_leave || 0;
+document.getElementById("maternityLeave").textContent =
+profile.maternity_leave || 0;
 
-document.getElementById("paternityLeave").textContent =profile.paternity_leave || 0;
+document.getElementById("paternityLeave").textContent =
+profile.paternity_leave || 0;
 
-document.getElementById("studyLeave").textContent =profile.study_leave || 0;}
+document.getElementById("studyLeave").textContent =
+profile.study_leave || 0;
+}
 
 function logout(){
 
 localStorage.removeItem("currentUser");
 
-window.location.href ="https://interfreight.github.io/login/";}async function submitLeave(){
+window.location.href =
+"https://interfreight.github.io/login/";
+}
+async function submitLeave(){
 
-const leaveType =document.getElementById("leaveType").value;
+const leaveType =
+document.getElementById("leaveType").value;
 
-const dateFrom =document.getElementById("dateFrom").value;
+const dateFrom =
+document.getElementById("dateFrom").value;
 
-const dateTo =document.getElementById("dateTo").value;
+const dateTo =
+document.getElementById("dateTo").value;
 
-const reason =document.getElementById("leaveReason").value;
+const reason =
+document.getElementById("leaveReason").value;
 
 if(!dateFrom || !dateTo){
 
-alert("Please select dates");return;
+alert("Please select dates");
+return;
 
-}if(new Date(dateTo) < new Date(dateFrom)){
+}
+if(new Date(dateTo) < new Date(dateFrom)){
 
 alert("Date To cannot be earlier than Date From");
 
 return;
 
-}if(reason.trim() === ""){alert("Please enter reason");return;}const { data: profile, error: profileError } =await db.from("employee_profiles").select("*").eq("user_id", currentUser.id).single();
+}
+  if(reason.trim() === ""){
+    alert("Please enter reason");
+    return;
+}
+const { data: profile, error: profileError } =
+await db
+.from("employee_profiles")
+.select("*")
+.eq("user_id", currentUser.id)
+.single();
 
 if(profileError){
 
@@ -699,123 +778,169 @@ return;
 
 }
 
-let available = 0;switch(leaveType){
+let available = 0;
+switch(leaveType){
 
-case "Vacation Leave":available = profile.vacation_leave || 0;break;
+case "Vacation Leave":
+available = profile.vacation_leave || 0;
+break;
 
-case "Sick Leave":available = profile.sick_leave || 0;break;
+case "Sick Leave":
+available = profile.sick_leave || 0;
+break;
 
-case "Emergency Leave":available = profile.emergency_leave || 0;break;
+case "Emergency Leave":
+available = profile.emergency_leave || 0;
+break;
 
-case "Birthday Leave":available = profile.birthday_leave || 0;break;
+case "Birthday Leave":
+available = profile.birthday_leave || 0;
+break;
 
-case "Maternity Leave":available = profile.maternity_leave || 0;break;
+case "Maternity Leave":
+available = profile.maternity_leave || 0;
+break;
 
-case "Paternity Leave":available = profile.paternity_leave || 0;break;
+case "Paternity Leave":
+available = profile.paternity_leave || 0;
+break;
 
-case "Study Leave":available = profile.study_leave || 0;break;
+case "Study Leave":
+available = profile.study_leave || 0;
+break;
 
-}const days =Math.ceil((new Date(dateTo) - new Date(dateFrom))/(10006060*24)) + 1;if(days > available){
+}
+const days =
+Math.ceil(
+(new Date(dateTo) - new Date(dateFrom))
+/
+(1000*60*60*24)
+) + 1;
+if(days > available){
 
-alert("Insufficient leave balance. Available: "
-
-available);
+alert(
+"Insufficient leave balance. Available: "
++ available
+);
 
 return;
 
-}let approverRole = "";console.log(currentUser);console.log("Department =", currentUser.department);console.log("Role =", currentUser.role);if(currentUser.role.toUpperCase() === "USER"){
-
-switch(currentUser.department.toUpperCase()){
-   
-    case "ACCOUNTING":
-        approverRole = "ACCOUNTING MANAGER";
-        break;
-
-    case "OPERATIONS":
-        approverRole = "OPERATIONS MANAGER";
-        break;
-
-    case "SALES":
-        approverRole = "SALES MANAGER";
-        break;
-
-    case "TRANSPORT":
-        approverRole = "TRANSPORT MANAGER";
-        break;
-
-    case "FORWARDING":
-        approverRole = "FORWARDING MANAGER";
-        break;
-
-    case "HR":
-        approverRole = "HR";
-        break;
 }
+  let approverRole = "";
+console.log(currentUser);
+console.log("Department =", currentUser.department);
+console.log("Role =", currentUser.role);
+if(currentUser.role.toUpperCase() === "USER"){
+
+    switch(currentUser.department.toUpperCase()){
+       
+        case "ACCOUNTING":
+            approverRole = "ACCOUNTING MANAGER";
+            break;
+
+        case "OPERATIONS":
+            approverRole = "OPERATIONS MANAGER";
+            break;
+
+        case "SALES":
+            approverRole = "SALES MANAGER";
+            break;
+
+        case "TRANSPORT":
+            approverRole = "TRANSPORT MANAGER";
+            break;
+
+        case "FORWARDING":
+            approverRole = "FORWARDING MANAGER";
+            break;
+
+        case "HR":
+            approverRole = "HR";
+            break;
+    }
 
 }else{
 
-approverRole = "PRESIDENT";
+    approverRole = "PRESIDENT";
 
 }
 
-console.log("Approver =", approverRole);const { error } =await db.from("employee_leaves").insert({
+console.log("Approver =", approverRole);
+const { error } =
+await db
+.from("employee_leaves")
+.insert({
 
 user_id: currentUser.id,
 
-employee_name:currentUser.full_name,
+employee_name:
+currentUser.full_name,
 
-department:currentUser.department,
+department:
+currentUser.department,
 
-approver_role:approverRole,
+approver_role:
+approverRole,
 
-leave_type:leaveType,
+leave_type:
+leaveType,
 
-date_from:dateFrom,
+date_from:
+dateFrom,
 
-date_to:dateTo,
+date_to:
+dateTo,
 
-total_days:days,
+total_days:
+days,
 
-reason:reason,
+reason:
+reason,
 
 status:"Pending",
 
-approved_by,
+approved_by:null,
 
-approved_date,
+approved_date:null,
 
-deducted
+deducted:false
 
 });
 
 if(error){
 
-alert(error.message);return;
+alert(error.message);
+return;
 
 }
 
-alert("Leave request submitted.");document.getElementById("dateFrom").value = "";document.getElementById("dateTo").value = "";document.getElementById("leaveReason").value = "";
-
+alert("Leave request submitted.");
+document.getElementById("dateFrom").value = "";
+document.getElementById("dateTo").value = "";
+document.getElementById("leaveReason").value = "";
+  
 loadLeaveHistory();
 
-}loadProfile();loadLeaveHistory();
+}
+loadProfile();
+loadLeaveHistory();
 
 </script>
 <script>
 const menuLinks = document.querySelectorAll(".menu-link");
 
-menuLinks.forEach(link => {link.addEventListener("click", function(){
+menuLinks.forEach(link => {
+    link.addEventListener("click", function(){
 
-    menuLinks.forEach(item=>{
-        item.classList.remove("active");
+        menuLinks.forEach(item=>{
+            item.classList.remove("active");
+        });
+
+        this.classList.add("active");
+
     });
-
-    this.classList.add("active");
-
 });
-
-});</script>
-
+</script>
 </body>
 </html>
 ```
