@@ -227,7 +227,18 @@ text-align:center;
 </head>
 
 <body>
+<script>
+const currentUser =
+JSON.parse(localStorage.getItem("currentUser"));
 
+if(!currentUser){
+
+    window.location.replace(
+    "https://interfreight.github.io/login/"
+    );
+
+}
+</script>
 <div class="sidebar">
 
 <div class="logo">
@@ -723,9 +734,12 @@ profile.study_leave || 0;
 function logout(){
 
 localStorage.removeItem("currentUser");
+sessionStorage.clear();
 
-window.location.href =
-"https://interfreight.github.io/login/";
+window.location.replace(
+"https://interfreight.github.io/login/"
+);
+
 }
 async function submitLeave(){
 
@@ -943,6 +957,30 @@ menuLinks.forEach(link => {
 
     });
 });
+</script>
+    <script>
+
+history.pushState(null,null,location.href);
+
+window.addEventListener("popstate",function(){
+
+const currentUser =
+JSON.parse(localStorage.getItem("currentUser"));
+
+if(!currentUser){
+
+window.location.replace(
+"https://interfreight.github.io/login/"
+);
+
+}else{
+
+history.pushState(null,null,location.href);
+
+}
+
+});
+
 </script>
 </body>
 </html>
