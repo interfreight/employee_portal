@@ -536,9 +536,10 @@ const currentUser =
 JSON.parse(localStorage.getItem("currentUser"));
 
 if(!currentUser){
-window.location.replace(
-"https://interfreight.github.io/login/"
-);
+    window.location.replace(
+        "https://interfreight.github.io/login/"
+    );
+}
 async function loadLeaveHistory(){
 
 const container =
