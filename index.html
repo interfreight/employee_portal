@@ -237,8 +237,18 @@ function checkLogin() {
 
     if (!currentUser) {
         window.location.replace(LOGIN_URL);
+        return false;
     }
+
+    return true;
 }
+
+checkLogin();
+
+// Runs again when returning via the Back button
+window.addEventListener("pageshow", function () {
+    checkLogin();
+});
 
 checkLogin();
 </script>
@@ -965,22 +975,7 @@ menuLinks.forEach(link => {
     });
 });
 
-window.onpopstate = function(){
 
-    const currentUser =
-    JSON.parse(localStorage.getItem("currentUser"));
-
-    if(!currentUser){
-
-        window.location.replace(
-            "https://interfreight.github.io/login/"
-        );
-
-    }
-
-    history.pushState(null, "", location.href);
-
-};
 </script>
  
 </body>
