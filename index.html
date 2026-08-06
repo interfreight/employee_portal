@@ -533,14 +533,21 @@ const db = window.supabase.createClient(
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1aWhwdnlrdXFicW5meWZlcHFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3Mjg4OTcsImV4cCI6MjA5NzMwNDg5N30.HZKS8CgFLjkZ-Bx2AIjFjurH3IsKjvf37Ft852CzJsQ"
 );
 
-const currentUser =
-JSON.parse(localStorage.getItem("currentUser"));
+const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-if(!currentUser){
-    window.location.replace(
-        "https://interfreight.github.io/login/"
-    );
+if (!currentUser) {
+    window.location.replace("https://interfreight.github.io/login/");
 }
+
+window.addEventListener("storage", function (event) {
+
+    if (event.key === "currentUser" && event.newValue === null) {
+
+        window.location.replace("https://interfreight.github.io/login/");
+
+    }
+
+});
 async function loadLeaveHistory(){
 
 const container =
@@ -733,14 +740,11 @@ document.getElementById("studyLeave").textContent =
 profile.study_leave || 0;
 }
 
-function logout(){
+function logout() {
 
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage.removeItem("currentUser");
 
-    window.location.replace(
-        "https://interfreight.github.io/login/"
-    );
+    window.location.replace("https://interfreight.github.io/login/");
 
 }
 async function submitLeave(){
