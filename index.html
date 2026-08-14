@@ -1219,7 +1219,7 @@ function startLeaveCountdown(){
     let remaining = 30;
 
     button.innerHTML =
-        '<i class="fa fa-clock"></i> Please wait ' +
+        'Please wait ' +
         remaining +
         's';
 
@@ -1236,20 +1236,28 @@ function startLeaveCountdown(){
                 button.disabled = false;
 
                 button.innerHTML =
-                    '<i class="fa fa-paper-plane"></i> Submit Leave';
+                    'Submit Leave';
 
                 return;
-
             }
 
             button.innerHTML =
-                '<i class="fa fa-clock"></i> Please wait ' +
+                'Please wait ' +
                 remaining +
                 's';
 
         },1000);
 
 }
+
+
+/* =========================================
+   LOAD DATA
+========================================= */
+
+loadProfile();
+loadLeaveHistory();
+
 
 </script>
  
