@@ -250,7 +250,6 @@ window.addEventListener("pageshow", function () {
     checkLogin();
 });
 
-checkLogin();
 </script>
 <div class="sidebar">
 
@@ -514,6 +513,7 @@ border-radius:10px;">
 <br>
 
 <button
+id="submitLeaveBtn"
 onclick="submitLeave()"
 style="
 background:#003366;
@@ -521,7 +521,10 @@ color:white;
 border:none;
 padding:12px 20px;
 border-radius:10px;
-cursor:pointer;">Submit Leave Request</button>
+cursor:pointer;">
+<i class="fa fa-paper-plane"></i>
+Submit Leave
+</button>
 
 </div>
 
@@ -759,221 +762,536 @@ function logout() {
 }
 async function submitLeave(){
 
-const leaveType =
-document.getElementById("leaveType").value;
+    /* =========================================
+       30-SECOND SUBMISSION LOCK
+    ========================================= */
 
-const dateFrom =
-document.getElementById("dateFrom").value;
+    const submitButton =
+        document.getElementById("submitLeaveBtn");
 
-const dateTo =
-document.getElementById("dateTo").value;
+    const LOCK_TIME = 30 * 1000;
 
-const reason =
-document.getElementById("leaveReason").value;
+    const lastSubmit =
+        localStorage.getItem("leaveSubmitTime");
 
-if(!dateFrom || !dateTo){
+    const now = Date.now();
 
-alert("Please select dates");
-return;
+    if(lastSubmit){
 
-}
-if(new Date(dateTo) < new Date(dateFrom)){
+        const elapsed = now - parseInt(lastSubmit);
 
-alert("Date To cannot be earlier than Date From");
+        if(elapsed < LOCK_TIME){
 
-return;
+            const remaining =
+                Math.ceil((LOCK_TIME - elapsed) / 1000);
 
-}
-  if(reason.trim() === ""){
-    alert("Please enter reason");
-    return;
-}
-const { data: profile, error: profileError } =
-await db
-.from("employee_profiles")
-.select("*")
-.eq("user_id", currentUser.id)
-.single();
+            alert(
+                "Please wait " +
+                remaining +
+                " seconds before submitting another leave request."
+            );
 
-if(profileError){
-
-alert(profileError.message);
-
-return;
-
-}
-
-if(!profile){
-
-alert("Employee profile not found.");
-
-return;
-
-}
-
-let available = 0;
-switch(leaveType){
-
-case "Vacation Leave":
-available = profile.vacation_leave || 0;
-break;
-
-case "Sick Leave":
-available = profile.sick_leave || 0;
-break;
-
-case "Emergency Leave":
-available = profile.emergency_leave || 0;
-break;
-
-case "Birthday Leave":
-available = profile.birthday_leave || 0;
-break;
-
-case "Maternity Leave":
-available = profile.maternity_leave || 0;
-break;
-
-case "Paternity Leave":
-available = profile.paternity_leave || 0;
-break;
-
-case "Study Leave":
-available = profile.study_leave || 0;
-break;
-
-}
-const days =
-Math.ceil(
-(new Date(dateTo) - new Date(dateFrom))
-/
-(1000*60*60*24)
-) + 1;
-if(days > available){
-
-alert(
-"Insufficient leave balance. Available: "
-+ available
-);
-
-return;
-
-}
-  let approverRole = "";
-console.log(currentUser);
-console.log("Department =", currentUser.department);
-console.log("Role =", currentUser.role);
-if(currentUser.role.toUpperCase() === "USER"){
-
-    switch(currentUser.department.toUpperCase()){
-       
-        case "ACCOUNTING":
-            approverRole = "ACCOUNTING MANAGER";
-            break;
-
-        case "OPERATIONS":
-            approverRole = "OPERATIONS MANAGER";
-            break;
-
-        case "SALES":
-            approverRole = "SALES MANAGER";
-            break;
-
-        case "TRANSPORT":
-            approverRole = "TRANSPORT MANAGER";
-            break;
-
-        case "FORWARDING":
-            approverRole = "FORWARDING MANAGER";
-            break;
-
-        case "HR":
-            approverRole = "HR";
-            break;
+            return;
+        }
     }
 
-}else{
+    /* =========================================
+       DISABLE BUTTON IMMEDIATELY
+    ========================================= */
 
-    approverRole = "PRESIDENT";
+    if(submitButton){
 
-}
+        submitButton.disabled = true;
 
-console.log("Approver =", approverRole);
-const { error } =
-await db
-.from("employee_leaves")
-.insert({
+        submitButton.dataset.originalText =
+            submitButton.innerHTML;
 
-user_id: currentUser.id,
+        submitButton.innerHTML =
+            '<i class="fa fa-clock"></i> Please wait 30s';
 
-employee_name:
-currentUser.full_name,
+    }
 
-department:
-currentUser.department,
+    /* =========================================
+       GET FORM VALUES
+    ========================================= */
 
-approver_role:
-approverRole,
+    const leaveType =
+        document.getElementById("leaveType").value;
 
-leave_type:
-leaveType,
+    const dateFrom =
+        document.getElementById("dateFrom").value;
 
-date_from:
-dateFrom,
+    const dateTo =
+        document.getElementById("dateTo").value;
 
-date_to:
-dateTo,
+    const reason =
+        document.getElementById("leaveReason").value;
 
-total_days:
-days,
 
-reason:
-reason,
+    /* =========================================
+       VALIDATION
+    ========================================= */
 
-status:"Pending",
+    if(!dateFrom || !dateTo){
 
-approved_by:null,
+        alert("Please select dates.");
 
-approved_date:null,
+        resetLeaveSubmitButton();
 
-deducted:false
+        return;
+    }
 
-});
 
-if(error){
+    if(new Date(dateTo) < new Date(dateFrom)){
 
-alert(error.message);
-return;
+        alert("Date To cannot be earlier than Date From");
 
-}
+        resetLeaveSubmitButton();
 
-alert("Leave request submitted.");
-document.getElementById("dateFrom").value = "";
-document.getElementById("dateTo").value = "";
-document.getElementById("leaveReason").value = "";
-  
-loadLeaveHistory();
+        return;
+    }
 
-}
-loadProfile();
-loadLeaveHistory();
 
-</script>
+    if(reason.trim() === ""){
 
-<script>
-const menuLinks = document.querySelectorAll(".menu-link");
+        alert("Please enter reason.");
 
-menuLinks.forEach(link => {
-    link.addEventListener("click", function(){
+        resetLeaveSubmitButton();
 
-        menuLinks.forEach(item=>{
-            item.classList.remove("active");
+        return;
+    }
+
+
+    /* =========================================
+       GET EMPLOYEE PROFILE
+    ========================================= */
+
+    const {
+        data: profile,
+        error: profileError
+    } = await db
+        .from("employee_profiles")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .single();
+
+
+    if(profileError){
+
+        alert(profileError.message);
+
+        resetLeaveSubmitButton();
+
+        return;
+    }
+
+
+    if(!profile){
+
+        alert("Employee profile not found.");
+
+        resetLeaveSubmitButton();
+
+        return;
+    }
+
+
+    /* =========================================
+       CHECK LEAVE BALANCE
+    ========================================= */
+
+    let available = 0;
+
+    switch(leaveType){
+
+        case "Vacation Leave":
+
+            available =
+                profile.vacation_leave || 0;
+
+            break;
+
+
+        case "Sick Leave":
+
+            available =
+                profile.sick_leave || 0;
+
+            break;
+
+
+        case "Emergency Leave":
+
+            available =
+                profile.emergency_leave || 0;
+
+            break;
+
+
+        case "Birthday Leave":
+
+            available =
+                profile.birthday_leave || 0;
+
+            break;
+
+
+        case "Maternity Leave":
+
+            available =
+                profile.maternity_leave || 0;
+
+            break;
+
+
+        case "Paternity Leave":
+
+            available =
+                profile.paternity_leave || 0;
+
+            break;
+
+
+        case "Study Leave":
+
+            available =
+                profile.study_leave || 0;
+
+            break;
+
+    }
+
+
+    /* =========================================
+       COMPUTE DAYS
+    ========================================= */
+
+    const days =
+        Math.ceil(
+            (
+                new Date(dateTo) -
+                new Date(dateFrom)
+            )
+            /
+            (1000 * 60 * 60 * 24)
+        ) + 1;
+
+
+    /* =========================================
+       CHECK AVAILABLE BALANCE
+    ========================================= */
+
+    if(days > available){
+
+        alert(
+            "Insufficient leave balance.\n\n" +
+            "Requested: " + days + " day(s)\n" +
+            "Available: " + available + " day(s)"
+        );
+
+        resetLeaveSubmitButton();
+
+        return;
+    }
+
+
+    /* =========================================
+       DETERMINE APPROVER
+    ========================================= */
+
+    let approverRole = "";
+
+    console.log(currentUser);
+
+    console.log(
+        "Department =",
+        currentUser.department
+    );
+
+    console.log(
+        "Role =",
+        currentUser.role
+    );
+
+
+    if(
+        currentUser.role &&
+        currentUser.role.toUpperCase() === "USER"
+    ){
+
+        switch(
+            currentUser.department.toUpperCase()
+        ){
+
+            case "ACCOUNTING":
+
+                approverRole =
+                    "ACCOUNTING MANAGER";
+
+                break;
+
+
+            case "OPERATIONS":
+
+                approverRole =
+                    "OPERATIONS MANAGER";
+
+                break;
+
+
+            case "SALES":
+
+                approverRole =
+                    "SALES MANAGER";
+
+                break;
+
+
+            case "TRANSPORT":
+
+                approverRole =
+                    "TRANSPORT MANAGER";
+
+                break;
+
+
+            case "FORWARDING":
+
+                approverRole =
+                    "FORWARDING MANAGER";
+
+                break;
+
+
+            case "HR":
+
+                approverRole =
+                    "HR";
+
+                break;
+
+        }
+
+    }else{
+
+        approverRole =
+            "PRESIDENT";
+
+    }
+
+
+    console.log(
+        "Approver =",
+        approverRole
+    );
+
+
+    /* =========================================
+       SAVE 30-SECOND LOCK
+       
+       IMPORTANT:
+       Save only when we are actually submitting.
+    ========================================= */
+
+    localStorage.setItem(
+        "leaveSubmitTime",
+        Date.now().toString()
+    );
+
+
+    /* =========================================
+       INSERT LEAVE REQUEST
+    ========================================= */
+
+    const {
+        error
+    } = await db
+        .from("employee_leaves")
+        .insert({
+
+            user_id:
+                currentUser.id,
+
+            employee_name:
+                currentUser.full_name,
+
+            department:
+                currentUser.department,
+
+            approver_role:
+                approverRole,
+
+            leave_type:
+                leaveType,
+
+            date_from:
+                dateFrom,
+
+            date_to:
+                dateTo,
+
+            total_days:
+                days,
+
+            reason:
+                reason,
+
+            status:
+                "Pending",
+
+            approved_by:
+                null,
+
+            approved_date:
+                null,
+
+            deducted:
+                false
+
         });
 
-        this.classList.add("active");
 
-    });
-});
+    /* =========================================
+       INSERT ERROR
+    ========================================= */
+
+    if(error){
+
+        console.error(error);
+
+        alert(error.message);
+
+        /*
+        Remove lock if database submission failed
+        so employee can try again.
+        */
+
+        localStorage.removeItem(
+            "leaveSubmitTime"
+        );
+
+        resetLeaveSubmitButton();
+
+        return;
+    }
+
+
+    /* =========================================
+       SUCCESS
+    ========================================= */
+
+    alert(
+        "Leave request submitted successfully!"
+    );
+
+
+    /* =========================================
+       CLEAR FORM
+    ========================================= */
+
+    document.getElementById(
+        "dateFrom"
+    ).value = "";
+
+
+    document.getElementById(
+        "dateTo"
+    ).value = "";
+
+
+    document.getElementById(
+        "leaveReason"
+    ).value = "";
+
+
+    /* =========================================
+       REFRESH HISTORY
+    ========================================= */
+
+    await loadLeaveHistory();
+
+
+    /* =========================================
+       START 30-SECOND COUNTDOWN
+    ========================================= */
+
+    startLeaveCountdown();
+
+}
+
+
+/* =============================================
+   RESET BUTTON
+============================================= */
+
+function resetLeaveSubmitButton(){
+
+    const button =
+        document.getElementById("submitLeaveBtn");
+
+    if(!button) return;
+
+    button.disabled = false;
+
+    button.innerHTML =
+        '<i class="fa fa-paper-plane"></i> Submit Leave';
+
+}
+
+
+/* =============================================
+   30-SECOND COUNTDOWN
+============================================= */
+
+function startLeaveCountdown(){
+
+    const button =
+        document.getElementById("submitLeaveBtn");
+
+    if(!button) return;
+
+
+    button.disabled = true;
+
+
+    let remaining = 30;
+
+
+    button.innerHTML =
+        '<i class="fa fa-clock"></i> Please wait ' +
+        remaining +
+        's';
+
+
+    const countdown =
+        setInterval(function(){
+
+            remaining--;
+
+
+            if(remaining <= 0){
+
+                clearInterval(countdown);
+
+                button.disabled = false;
+
+                button.innerHTML =
+                    '<i class="fa fa-paper-plane"></i> Submit Leave';
+
+                return;
+
+            }
+
+
+            button.innerHTML =
+                '<i class="fa fa-clock"></i> Please wait ' +
+                remaining +
+                's';
+
+
+        },1000);
+
+}
 
 
 </script>
