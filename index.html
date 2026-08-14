@@ -947,80 +947,88 @@ async function submitLeave(){
     }
 
 
-    /* =========================================
-       CHECK EXISTING PENDING REQUESTS
-       
-       IMPORTANT:
-       Pending requests temporarily consume
-       the employee's available credits.
-    ========================================= */
+  /* =========================================
+   CHECK PENDING LEAVE REQUESTS
+   Pending requests temporarily consume
+   the available leave credits.
+========================================= */
 
-    const {
-        data: pendingLeaves,
-        error: pendingError
-    } = await db
-        .from("employee_leaves")
-        .select("total_days, leave_type")
-        .eq("user_id", currentUser.id)
-        .eq("leave_type", leaveType)
-        .eq("status", "Pending");
+const {
+    data: pendingLeaves,
+    error: pendingError
+} = await db
+    .from("employee_leaves")
+    .select("total_days")
+    .eq("user_id", currentUser.id)
+    .eq("leave_type", leaveType)
+    .eq("status", "Pending");
 
+if(pendingError){
 
-    if(pendingError){
+    console.error("Pending leave check error:", pendingError);
 
-        alert(
-            "Unable to check existing leave requests.\n\n" +
-            pendingError.message
-        );
+    alert(
+        "Unable to check your existing leave request.\n\n" +
+        pendingError.message
+    );
 
-        resetLeaveSubmitButton();
+    resetLeaveSubmitButton();
 
-        return;
-    }
-
-
-    /* =========================================
-       CALCULATE DAYS ALREADY REQUESTED
-    ========================================= */
-
-    let pendingDays = 0;
-
-    if(pendingLeaves && pendingLeaves.length > 0){
-
-        pendingLeaves.forEach(leave => {
-
-            pendingDays +=
-                Number(leave.total_days || 0);
-
-        });
-
-    }
+    return;
+}
 
 
-    /* =========================================
-       CHECK REMAINING CREDIT
-    ========================================= */
+/* =========================================
+   TOTAL PENDING DAYS
+========================================= */
 
-    const remainingCredit =
-        available - pendingDays;
+let pendingDays = 0;
+
+if(pendingLeaves){
+
+    pendingLeaves.forEach(function(leave){
+
+        pendingDays += Number(leave.total_days || 0);
+
+    });
+
+}
 
 
-    if(days > remainingCredit){
+/* =========================================
+   REMAINING AVAILABLE CREDIT
+========================================= */
 
-        alert(
-            "You do not have enough available leave credit.\n\n" +
-            "Leave Type: " + leaveType + "\n" +
-            "Leave Credit: " + available + " day(s)\n" +
-            "Already Pending: " + pendingDays + " day(s)\n" +
-            "Remaining: " + remainingCredit + " day(s)\n" +
-            "Requested: " + days + " day(s)"
-        );
+const remainingCredit =
+    Number(available) - pendingDays;
 
-        resetLeaveSubmitButton();
 
-        return;
-    }
+/* =========================================
+   CHECK CREDIT
+========================================= */
 
+if(days > remainingCredit){
+
+    alert(
+        "You cannot submit this leave request.\n\n" +
+
+        "Leave Type: " + leaveType + "\n" +
+
+        "Leave Credit: " + available + " day(s)\n" +
+
+        "Pending Leave: " + pendingDays + " day(s)\n" +
+
+        "Remaining Credit: " + remainingCredit + " day(s)\n\n" +
+
+        "Your pending leave request is temporarily using " +
+        pendingDays +
+        " day(s) of your leave credit."
+    );
+
+    resetLeaveSubmitButton();
+
+    return;
+}
 
     /* =========================================
        DETERMINE APPROVER
