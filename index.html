@@ -796,20 +796,18 @@ async function submitLeave(){
     }
 
     /* =========================================
-       DISABLE BUTTON IMMEDIATELY
+       DISABLE BUTTON
     ========================================= */
 
     if(submitButton){
 
         submitButton.disabled = true;
 
-        submitButton.dataset.originalText =
-            submitButton.innerHTML;
-
         submitButton.innerHTML =
-            '<i class="fa fa-clock"></i> Please wait 30s';
+            '<i class="fa fa-clock"></i> Processing...';
 
     }
+
 
     /* =========================================
        GET FORM VALUES
@@ -844,7 +842,7 @@ async function submitLeave(){
 
     if(new Date(dateTo) < new Date(dateFrom)){
 
-        alert("Date To cannot be earlier than Date From");
+        alert("Date To cannot be earlier than Date From.");
 
         resetLeaveSubmitButton();
 
@@ -860,6 +858,21 @@ async function submitLeave(){
 
         return;
     }
+
+
+    /* =========================================
+       COMPUTE REQUESTED DAYS
+    ========================================= */
+
+    const days =
+        Math.ceil(
+            (
+                new Date(dateTo) -
+                new Date(dateFrom)
+            )
+            /
+            (1000 * 60 * 60 * 24)
+        ) + 1;
 
 
     /* =========================================
@@ -897,7 +910,7 @@ async function submitLeave(){
 
 
     /* =========================================
-       CHECK LEAVE BALANCE
+       GET AVAILABLE LEAVE CREDIT
     ========================================= */
 
     let available = 0;
@@ -905,88 +918,102 @@ async function submitLeave(){
     switch(leaveType){
 
         case "Vacation Leave":
-
-            available =
-                profile.vacation_leave || 0;
-
+            available = profile.vacation_leave || 0;
             break;
-
 
         case "Sick Leave":
-
-            available =
-                profile.sick_leave || 0;
-
+            available = profile.sick_leave || 0;
             break;
-
 
         case "Emergency Leave":
-
-            available =
-                profile.emergency_leave || 0;
-
+            available = profile.emergency_leave || 0;
             break;
-
 
         case "Birthday Leave":
-
-            available =
-                profile.birthday_leave || 0;
-
+            available = profile.birthday_leave || 0;
             break;
-
 
         case "Maternity Leave":
-
-            available =
-                profile.maternity_leave || 0;
-
+            available = profile.maternity_leave || 0;
             break;
-
 
         case "Paternity Leave":
-
-            available =
-                profile.paternity_leave || 0;
-
+            available = profile.paternity_leave || 0;
             break;
-
 
         case "Study Leave":
-
-            available =
-                profile.study_leave || 0;
-
+            available = profile.study_leave || 0;
             break;
+    }
+
+
+    /* =========================================
+       CHECK EXISTING PENDING REQUESTS
+       
+       IMPORTANT:
+       Pending requests temporarily consume
+       the employee's available credits.
+    ========================================= */
+
+    const {
+        data: pendingLeaves,
+        error: pendingError
+    } = await db
+        .from("employee_leaves")
+        .select("total_days, leave_type")
+        .eq("user_id", currentUser.id)
+        .eq("leave_type", leaveType)
+        .eq("status", "Pending");
+
+
+    if(pendingError){
+
+        alert(
+            "Unable to check existing leave requests.\n\n" +
+            pendingError.message
+        );
+
+        resetLeaveSubmitButton();
+
+        return;
+    }
+
+
+    /* =========================================
+       CALCULATE DAYS ALREADY REQUESTED
+    ========================================= */
+
+    let pendingDays = 0;
+
+    if(pendingLeaves && pendingLeaves.length > 0){
+
+        pendingLeaves.forEach(leave => {
+
+            pendingDays +=
+                Number(leave.total_days || 0);
+
+        });
 
     }
 
 
     /* =========================================
-       COMPUTE DAYS
+       CHECK REMAINING CREDIT
     ========================================= */
 
-    const days =
-        Math.ceil(
-            (
-                new Date(dateTo) -
-                new Date(dateFrom)
-            )
-            /
-            (1000 * 60 * 60 * 24)
-        ) + 1;
+    const remainingCredit =
+        available - pendingDays;
 
 
-    /* =========================================
-       CHECK AVAILABLE BALANCE
-    ========================================= */
-
-    if(days > available){
+    if(days > remainingCredit){
 
         alert(
-            "Insufficient leave balance.\n\n" +
-            "Requested: " + days + " day(s)\n" +
-            "Available: " + available + " day(s)"
+            "You do not have enough available leave credit.\n\n" +
+            "Leave Type: " + leaveType + "\n" +
+            "Leave Credit: " + available + " day(s)\n" +
+            "Already Pending: " + pendingDays + " day(s)\n" +
+            "Remaining: " + remainingCredit + " day(s)\n" +
+            "Requested: " + days + " day(s)"
         );
 
         resetLeaveSubmitButton();
@@ -1001,18 +1028,6 @@ async function submitLeave(){
 
     let approverRole = "";
 
-    console.log(currentUser);
-
-    console.log(
-        "Department =",
-        currentUser.department
-    );
-
-    console.log(
-        "Role =",
-        currentUser.role
-    );
-
 
     if(
         currentUser.role &&
@@ -1024,73 +1039,39 @@ async function submitLeave(){
         ){
 
             case "ACCOUNTING":
-
-                approverRole =
-                    "ACCOUNTING MANAGER";
-
+                approverRole = "ACCOUNTING MANAGER";
                 break;
-
 
             case "OPERATIONS":
-
-                approverRole =
-                    "OPERATIONS MANAGER";
-
+                approverRole = "OPERATIONS MANAGER";
                 break;
-
 
             case "SALES":
-
-                approverRole =
-                    "SALES MANAGER";
-
+                approverRole = "SALES MANAGER";
                 break;
-
 
             case "TRANSPORT":
-
-                approverRole =
-                    "TRANSPORT MANAGER";
-
+                approverRole = "TRANSPORT MANAGER";
                 break;
-
 
             case "FORWARDING":
-
-                approverRole =
-                    "FORWARDING MANAGER";
-
+                approverRole = "FORWARDING MANAGER";
                 break;
-
 
             case "HR":
-
-                approverRole =
-                    "HR";
-
+                approverRole = "HR";
                 break;
-
         }
 
     }else{
 
-        approverRole =
-            "PRESIDENT";
+        approverRole = "PRESIDENT";
 
     }
 
 
-    console.log(
-        "Approver =",
-        approverRole
-    );
-
-
     /* =========================================
        SAVE 30-SECOND LOCK
-       
-       IMPORTANT:
-       Save only when we are actually submitting.
     ========================================= */
 
     localStorage.setItem(
@@ -1161,11 +1142,6 @@ async function submitLeave(){
 
         alert(error.message);
 
-        /*
-        Remove lock if database submission failed
-        so employee can try again.
-        */
-
         localStorage.removeItem(
             "leaveSubmitTime"
         );
@@ -1185,35 +1161,15 @@ async function submitLeave(){
     );
 
 
-    /* =========================================
-       CLEAR FORM
-    ========================================= */
+    document.getElementById("dateFrom").value = "";
 
-    document.getElementById(
-        "dateFrom"
-    ).value = "";
+    document.getElementById("dateTo").value = "";
 
+    document.getElementById("leaveReason").value = "";
 
-    document.getElementById(
-        "dateTo"
-    ).value = "";
-
-
-    document.getElementById(
-        "leaveReason"
-    ).value = "";
-
-
-    /* =========================================
-       REFRESH HISTORY
-    ========================================= */
 
     await loadLeaveHistory();
 
-
-    /* =========================================
-       START 30-SECOND COUNTDOWN
-    ========================================= */
 
     startLeaveCountdown();
 
@@ -1250,12 +1206,9 @@ function startLeaveCountdown(){
 
     if(!button) return;
 
-
     button.disabled = true;
 
-
     let remaining = 30;
-
 
     button.innerHTML =
         '<i class="fa fa-clock"></i> Please wait ' +
@@ -1267,7 +1220,6 @@ function startLeaveCountdown(){
         setInterval(function(){
 
             remaining--;
-
 
             if(remaining <= 0){
 
@@ -1282,17 +1234,14 @@ function startLeaveCountdown(){
 
             }
 
-
             button.innerHTML =
                 '<i class="fa fa-clock"></i> Please wait ' +
                 remaining +
                 's';
 
-
         },1000);
 
 }
-
 
 </script>
  
