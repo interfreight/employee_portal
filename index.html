@@ -447,33 +447,37 @@ src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
 
 <select id="leaveType">
 
-<option value="Vacation Leave">
-Vacation Leave
-</option>
+    <option value="Vacation Leave">
+        Vacation Leave
+    </option>
 
-<option value="Sick Leave">
-Sick Leave
-</option>
+    <option value="Sick Leave">
+        Sick Leave
+    </option>
 
-<option value="Emergency Leave">
-Emergency Leave
-</option>
+    <option value="Emergency Leave">
+        Emergency Leave
+    </option>
 
-<option value="Birthday Leave">
-Birthday Leave
-</option>
+    <option value="Birthday Leave">
+        Birthday Leave
+    </option>
 
-<option value="Maternity Leave">
-Maternity Leave
-</option>
+    <option value="Maternity Leave">
+        Maternity Leave
+    </option>
 
-<option value="Paternity Leave">
-Paternity Leave
-</option>
+    <option value="Paternity Leave">
+        Paternity Leave
+    </option>
 
-<option value="Study Leave">
-Study Leave
-</option>
+    <option value="Study Leave">
+        Study Leave
+    </option>
+
+    <option value="Leave Without Pay">
+        Leave Without Pay
+    </option>
 
 </select>
 
@@ -909,125 +913,160 @@ async function submitLeave(){
     }
 
 
-    /* =========================================
-       GET AVAILABLE LEAVE CREDIT
-    ========================================= */
-
-    let available = 0;
-
-    switch(leaveType){
-
-        case "Vacation Leave":
-            available = profile.vacation_leave || 0;
-            break;
-
-        case "Sick Leave":
-            available = profile.sick_leave || 0;
-            break;
-
-        case "Emergency Leave":
-            available = profile.emergency_leave || 0;
-            break;
-
-        case "Birthday Leave":
-            available = profile.birthday_leave || 0;
-            break;
-
-        case "Maternity Leave":
-            available = profile.maternity_leave || 0;
-            break;
-
-        case "Paternity Leave":
-            available = profile.paternity_leave || 0;
-            break;
-
-        case "Study Leave":
-            available = profile.study_leave || 0;
-            break;
-    }
-
-
   /* =========================================
-   CHECK PENDING LEAVE REQUESTS
-   Pending requests temporarily consume
-   the available leave credits.
+   GET AVAILABLE LEAVE CREDIT
 ========================================= */
 
-const {
-    data: pendingLeaves,
-    error: pendingError
-} = await db
-    .from("employee_leaves")
-    .select("total_days")
-    .eq("user_id", currentUser.id)
-    .eq("leave_type", leaveType)
-    .eq("status", "Pending");
+let available = 0;
 
-if(pendingError){
+switch(leaveType){
 
-    console.error("Pending leave check error:", pendingError);
+    case "Vacation Leave":
+        available = Number(profile.vacation_leave || 0);
+        break;
 
-    alert(
-        "Unable to check your existing leave request.\n\n" +
-        pendingError.message
-    );
+    case "Sick Leave":
+        available = Number(profile.sick_leave || 0);
+        break;
 
-    resetLeaveSubmitButton();
+    case "Emergency Leave":
+        available = Number(profile.emergency_leave || 0);
+        break;
 
-    return;
+    case "Birthday Leave":
+        available = Number(profile.birthday_leave || 0);
+        break;
+
+    case "Maternity Leave":
+        available = Number(profile.maternity_leave || 0);
+        break;
+
+    case "Paternity Leave":
+        available = Number(profile.paternity_leave || 0);
+        break;
+
+    case "Study Leave":
+        available = Number(profile.study_leave || 0);
+        break;
+
+    case "Leave Without Pay":
+        available = 0;
+        break;
 }
 
 
 /* =========================================
-   TOTAL PENDING DAYS
+   LEAVE WITHOUT PAY
+   DOES NOT REQUIRE LEAVE CREDIT
+========================================= */
+
+const isLeaveWithoutPay =
+    leaveType === "Leave Without Pay";
+
+
+/* =========================================
+   CHECK PENDING LEAVE REQUESTS
+   Only applicable to paid/credit-based leaves
 ========================================= */
 
 let pendingDays = 0;
 
-if(pendingLeaves){
+if(!isLeaveWithoutPay){
 
-    pendingLeaves.forEach(function(leave){
+    const {
+        data: pendingLeaves,
+        error: pendingError
+    } = await db
+        .from("employee_leaves")
+        .select("total_days")
+        .eq("user_id", currentUser.id)
+        .eq("leave_type", leaveType)
+        .eq("status", "Pending");
 
-        pendingDays += Number(leave.total_days || 0);
+    if(pendingError){
 
-    });
+        console.error(
+            "Pending leave check error:",
+            pendingError
+        );
+
+        alert(
+            "Unable to check your existing leave request.\n\n" +
+            pendingError.message
+        );
+
+        resetLeaveSubmitButton();
+
+        return;
+    }
+
+
+    /* =========================================
+       TOTAL PENDING DAYS
+    ========================================= */
+
+    if(pendingLeaves){
+
+        pendingLeaves.forEach(function(leave){
+
+            pendingDays += Number(
+                leave.total_days || 0
+            );
+
+        });
+
+    }
+
+
+    /* =========================================
+       REMAINING AVAILABLE CREDIT
+    ========================================= */
+
+    const remainingCredit =
+        available - pendingDays;
+
+
+    /* =========================================
+       CHECK CREDIT
+    ========================================= */
+
+    if(days > remainingCredit){
+
+        alert(
+            "You cannot submit this leave request.\n\n" +
+
+            "Leave Type: " + leaveType + "\n" +
+
+            "Leave Credit: " + available + " day(s)\n" +
+
+            "Pending Leave: " + pendingDays + " day(s)\n" +
+
+            "Remaining Credit: " + remainingCredit + " day(s)\n\n" +
+
+            "Your pending leave request is temporarily using " +
+            pendingDays +
+            " day(s) of your leave credit."
+        );
+
+        resetLeaveSubmitButton();
+
+        return;
+    }
 
 }
 
 
 /* =========================================
-   REMAINING AVAILABLE CREDIT
+   LEAVE WITHOUT PAY
+   Skip credit validation completely
 ========================================= */
 
-const remainingCredit =
-    Number(available) - pendingDays;
+if(isLeaveWithoutPay){
 
-
-/* =========================================
-   CHECK CREDIT
-========================================= */
-
-if(days > remainingCredit){
-
-    alert(
-        "You cannot submit this leave request.\n\n" +
-
-        "Leave Type: " + leaveType + "\n" +
-
-        "Leave Credit: " + available + " day(s)\n" +
-
-        "Pending Leave: " + pendingDays + " day(s)\n" +
-
-        "Remaining Credit: " + remainingCredit + " day(s)\n\n" +
-
-        "Your pending leave request is temporarily using " +
-        pendingDays +
-        " day(s) of your leave credit."
+    console.log(
+        "Leave Without Pay request - no leave credit required."
     );
 
-    resetLeaveSubmitButton();
-
-    return;
 }
 
     /* =========================================
