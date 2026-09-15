@@ -862,7 +862,19 @@ async function submitLeave(){
 
         return;
     }
+const leaveDuration =
+    Number(document.getElementById("leaveDuration").value);
 
+if (leaveDuration === 0.5 && dateFrom !== dateTo) {
+
+    alert(
+        "Half Day leave can only be filed for ONE DATE.\n\n" +
+        "Please select the same Date From and Date To."
+    );
+
+    resetLeaveSubmitButton();
+    return;
+}
 
     if(reason.trim() === ""){
 
