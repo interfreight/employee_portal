@@ -853,17 +853,28 @@ async function submitLeave(){
         return;
     }
 
+if(new Date(dateTo) < new Date(dateFrom)){
 
-    if(new Date(dateTo) < new Date(dateFrom)){
+    alert("Date To cannot be earlier than Date From.");
 
-        alert("Date To cannot be earlier than Date From.");
+    resetLeaveSubmitButton();
 
-        resetLeaveSubmitButton();
+    return;
+}
 
-        return;
-    }
+
+/* =========================================
+   GET LEAVE DURATION
+========================================= */
+
 const leaveDuration =
     Number(document.getElementById("leaveDuration").value);
+
+
+/* =========================================
+   HALF DAY VALIDATION
+   HALF DAY = ONE DATE ONLY
+========================================= */
 
 if (leaveDuration === 0.5 && dateFrom !== dateTo) {
 
@@ -876,22 +887,24 @@ if (leaveDuration === 0.5 && dateFrom !== dateTo) {
     return;
 }
 
-    if(reason.trim() === ""){
 
-        alert("Please enter reason.");
+/* =========================================
+   REASON VALIDATION
+========================================= */
 
-        resetLeaveSubmitButton();
+if(reason.trim() === ""){
 
-        return;
-    }
+    alert("Please enter reason.");
+
+    resetLeaveSubmitButton();
+
+    return;
+}
 
 
 /* =========================================
    COMPUTE REQUESTED DAYS
 ========================================= */
-
-const leaveDuration =
-    Number(document.getElementById("leaveDuration").value);
 
 const dateDifference =
     Math.ceil(
@@ -902,7 +915,8 @@ const dateDifference =
         (1000 * 60 * 60 * 24)
     ) + 1;
 
-let days = dateDifference * leaveDuration;
+let days =
+    dateDifference * leaveDuration;
 
     /* =========================================
        GET EMPLOYEE PROFILE
